@@ -1,0 +1,7 @@
+{
+  "name": "barprep-edge-os",
+  "version": "0.1.0-dev",
+  "target": "Raspberry Pi Zero 2 W",
+  "reference_printer": "Brother QL-800 over USB",
+  "intended_first_commit": true
+}
