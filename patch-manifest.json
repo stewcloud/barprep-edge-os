@@ -1,0 +1,19 @@
+{
+  "milestone": 2,
+  "name": "Hello Edge",
+  "version": "0.1.0-dev",
+  "target": "Raspberry Pi Zero 2 W",
+  "changed_files": [
+    "CHANGELOG.md",
+    "README.md",
+    "docs/MILESTONE_2_HELLO_EDGE.md",
+    "installer/install.sh",
+    "installer/set-appliance-hostname.sh",
+    "runtime/barprep_edge/main.py",
+    "runtime/barprep_edge/system_info.py",
+    "runtime/barprep_edge/web/app.py",
+    "runtime/barprep_edge/web/templates.py",
+    "tests/test_system_info.py",
+    "tests/test_web.py"
+  ]
+}

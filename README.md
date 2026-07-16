@@ -10,11 +10,43 @@ The initial reference platform is:
 - 62 mm continuous label roll
 - Outbound HTTPS connection to BarPrep Core
 
-## Initial milestone
+## Current milestone
 
-**Edge OS 0.1.0 — It Prints**
+**Milestone 2 — Hello Edge**
 
-The first milestone proves the complete path:
+The runtime now provides:
+
+- Persistent device identity
+- Local appliance status page
+- `barprep-edge.local` mDNS hostname
+- System health and telemetry
+- Printer discovery summary
+- Automatic startup through systemd
+
+## Local interface
+
+After installation, open:
+
+```text
+http://barprep-edge.local:8787
+```
+
+APIs:
+
+```text
+http://barprep-edge.local:8787/api/status
+http://barprep-edge.local:8787/healthz
+```
+
+## Install on Raspberry Pi OS Lite
+
+```bash
+cd barprep-edge-os
+sudo bash installer/install.sh
+sudo reboot
+```
+
+## Initial product objective
 
 ```text
 BarPrep Core
@@ -26,26 +58,6 @@ BarPrep Edge OS
 Brother QL-800 over USB
     ↓
 Physical label
-```
-
-## Repository layout
-
-```text
-barprep-edge-os/
-├── .github/workflows/
-├── assets/
-├── docs/
-├── image/
-├── installer/
-├── runtime/
-├── scripts/
-├── tests/
-├── .gitignore
-├── CHANGELOG.md
-├── LICENSE
-├── pyproject.toml
-├── README.md
-└── requirements-dev.txt
 ```
 
 ## Status
