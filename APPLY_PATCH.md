@@ -1,17 +1,25 @@
-# Apply Milestone 2 Patch
+# Apply Milestone 3A Patch
+
+This patch adds the shared Edge API v1 and BarPrep Core Printing & Edge product
+contract. It does not yet activate cloud communication on the Pi.
+
+## Apply
 
 1. Extract this ZIP.
-2. Copy all included files and folders into the root of your existing
-   `barprep-edge-os` repository.
-3. Allow Windows to replace files with the same names.
-4. Open GitHub Desktop and review the changes.
+2. Copy all contents into the root of the existing `barprep-edge-os` repository.
+3. Allow Windows to replace files.
+4. Review the changes in GitHub Desktop.
 5. Commit with:
 
 ```text
-Add Milestone 2 Hello Edge appliance status
+Define Edge API v1 and BarPrep Core integration
 ```
 
 6. Push to origin.
 
-The patch adds the local appliance dashboard and system telemetry. It does not
-yet add captive Wi-Fi onboarding; that is Milestone 3.
+## Important documents
+
+- `docs/API_V1.md`
+- `docs/BARPREP_CORE_PRINTING_EDGE.md`
+
+The next runtime implementation will use these contracts.

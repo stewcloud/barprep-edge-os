@@ -19,10 +19,15 @@ def default_state() -> dict[str, Any]:
     return {
         "device_id": None,
         "device_secret": None,
+        "friendly_name": "BarPrep Edge",
         "paired": False,
         "pairing_code": None,
+        "pairing_expires_at": None,
+        "organization_id": None,
+        "location_id": None,
         "station_id": None,
         "station_name": None,
+        "configuration_revision": 0,
         "last_job_id": None,
         "last_error": None,
     }
@@ -65,7 +70,7 @@ def ensure_identity() -> dict[str, Any]:
     state = load_state()
 
     if not state["device_id"]:
-        state["device_id"] = secrets.token_hex(8)
+        state["device_id"] = f"bpe_{secrets.token_hex(6)}"
 
     if not state["device_secret"]:
         state["device_secret"] = secrets.token_urlsafe(32)

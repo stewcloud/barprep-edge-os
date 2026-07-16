@@ -1,19 +1,18 @@
 {
-  "milestone": 2,
-  "name": "Hello Edge",
+  "milestone": "3A",
+  "name": "Edge API & Product Contract",
   "version": "0.1.0-dev",
-  "target": "Raspberry Pi Zero 2 W",
   "changed_files": [
     "CHANGELOG.md",
     "README.md",
-    "docs/MILESTONE_2_HELLO_EDGE.md",
-    "installer/install.sh",
-    "installer/set-appliance-hostname.sh",
-    "runtime/barprep_edge/main.py",
-    "runtime/barprep_edge/system_info.py",
+    "docs/API_V1.md",
+    "docs/BARPREP_CORE_PRINTING_EDGE.md",
+    "runtime/barprep_edge/capabilities.py",
+    "runtime/barprep_edge/models.py",
+    "runtime/barprep_edge/state.py",
     "runtime/barprep_edge/web/app.py",
-    "runtime/barprep_edge/web/templates.py",
-    "tests/test_system_info.py",
-    "tests/test_web.py"
+    "tests/test_capabilities.py",
+    "tests/test_models.py",
+    "tests/test_state.py"
   ]
 }

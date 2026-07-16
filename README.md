@@ -10,11 +10,9 @@ The initial reference platform is:
 - 62 mm continuous label roll
 - Outbound HTTPS connection to BarPrep Core
 
-## Current milestone
+## Current progress
 
-**Milestone 2 — Hello Edge**
-
-The runtime now provides:
+### Milestone 2 — Hello Edge
 
 - Persistent device identity
 - Local appliance status page
@@ -22,6 +20,16 @@ The runtime now provides:
 - System health and telemetry
 - Printer discovery summary
 - Automatic startup through systemd
+
+### Milestone 3A — API & Product Contract
+
+- Edge API v1
+- Four-character pairing contract
+- Friendly Edge names
+- Capability advertisement
+- Label Canvas references
+- Print job state and lease contract
+- BarPrep Core v6.1 Printing & Edge UI specification
 
 ## Local interface
 
@@ -46,7 +54,7 @@ sudo bash installer/install.sh
 sudo reboot
 ```
 
-## Initial product objective
+## Product objective
 
 ```text
 BarPrep Core

@@ -9,7 +9,8 @@ def test_identity_is_persistent(tmp_path: Path, monkeypatch) -> None:
     first = state.ensure_identity()
     second = state.ensure_identity()
 
-    assert first["device_id"]
+    assert first["device_id"].startswith("bpe_")
     assert first["device_secret"]
     assert first["device_id"] == second["device_id"]
     assert first["device_secret"] == second["device_secret"]
+    assert first["friendly_name"] == "BarPrep Edge"

@@ -4,8 +4,9 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
 from .. import __version__
+from ..capabilities import capability_values
 from ..service import get_printer_driver
-from ..state import ensure_identity, load_state
+from ..state import ensure_identity
 from ..system_info import system_info_dict
 from .templates import render_status_page
 
@@ -46,10 +47,14 @@ def create_app() -> FastAPI:
             "version": __version__,
             "device": {
                 "device_id": identity["device_id"],
+                "friendly_name": identity["friendly_name"],
                 "paired": identity["paired"],
+                "pairing_code": identity["pairing_code"],
                 "station_id": identity["station_id"],
                 "station_name": identity["station_name"],
+                "configuration_revision": identity["configuration_revision"],
             },
+            "capabilities": capability_values(),
             "system": system_info_dict(),
             "printers": _printers(),
             "activity": {

@@ -18,5 +18,9 @@ All notable changes to BarPrep Edge OS will be documented here.
 - JSON status and health APIs
 - `barprep-edge.local` appliance hostname
 - Systemd and Avahi installation support
-- Raspberry Pi image-build structure
+- Edge API v1 specification
+- BarPrep Core v6.1 Printing & Edge module specification
+- Edge capability identifiers
+- Print job and Label Canvas API models
+- Friendly Edge naming and configuration revision state
 - Automated tests and GitHub workflow
