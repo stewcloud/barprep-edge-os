@@ -1,40 +1,51 @@
-# Apply BarPrep Edge 0.1.1-dev
+# Apply BarPrep Edge 0.2.0-dev
 
-This release fixes the QL-800 hot-plug dashboard crash.
+This release replaces the failing direct `backend_factory()` invocation with a
+Brother compatibility adapter.
 
-## Repository update
+## Repository
 
-1. Extract this ZIP.
-2. Copy all contents into the root of your `barprep-edge-os` repository.
+1. Extract the patch.
+2. Copy all files into the root of `barprep-edge-os`.
 3. Replace matching files.
-4. Commit with:
+4. Commit:
 
 ```text
-Release Edge 0.1.1 USB hot-plug fix
+Release Edge 0.2.0 Brother compatibility layer
 ```
 
-5. Push to GitHub.
+5. Push.
 
-## Update the Raspberry Pi
+## Raspberry Pi
+
+Because the Pi previously contained a local emergency edit, first confirm the
+working tree is clean:
 
 ```bash
 cd ~/barprep-edge-os
-git pull
+git status --short
+```
+
+If output appears:
+
+```bash
+git stash push -m "Pi local changes before Edge 0.2.0"
+```
+
+Then:
+
+```bash
+git pull --ff-only
 sudo bash installer/install.sh
 ```
 
-Then verify:
+Do not restore the old stash.
+
+## Verification
 
 ```bash
 curl http://127.0.0.1:8787/healthz
 curl http://127.0.0.1:8787/api/status
 ```
 
-Open:
-
-```text
-http://barprep-edge.local:8787
-```
-
-The dashboard should load with the QL-800 connected. Then use **Print test
-label** to validate the complete local print path.
+Open `http://barprep-edge.local:8787` and press **Print test label**.

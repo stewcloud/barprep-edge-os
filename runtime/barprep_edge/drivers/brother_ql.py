@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import io
-from typing import Any
 
-from brother_ql.backends import backend_factory
 from brother_ql.backends.helpers import discover
 from brother_ql.conversion import convert
 from brother_ql.raster import BrotherQLRaster
@@ -12,29 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 from ..activity import record_activity
 from ..config import settings
 from .base import OutputDevice, PrinterDriver
-
-
-def _identifier_from_discovery_result(raw_device: Any) -> str:
-    """
-    Normalize brother_ql discovery results into a stable string identifier.
-
-    Newer brother_ql/PyUSB combinations can return a dictionary containing
-    both an identifier and a live USB device instance. The live instance wraps
-    ctypes pointers and must never enter our public device model.
-    """
-    if isinstance(raw_device, dict):
-        identifier = raw_device.get("identifier")
-        if isinstance(identifier, str) and identifier:
-            return identifier
-
-    identifier = getattr(raw_device, "identifier", None)
-    if isinstance(identifier, str) and identifier:
-        return identifier
-
-    if isinstance(raw_device, str):
-        return raw_device
-
-    raise ValueError(f"Unsupported Brother discovery result: {type(raw_device).__name__}")
+from .brother_compat import identifier_from_discovery_result, send_instructions
 
 
 class BrotherQLDriver(PrinterDriver):
@@ -61,7 +37,7 @@ class BrotherQLDriver(PrinterDriver):
         devices: list[OutputDevice] = []
         for raw_device in raw_devices:
             try:
-                identifier = _identifier_from_discovery_result(raw_device)
+                identifier = identifier_from_discovery_result(raw_device)
             except ValueError as exc:
                 record_activity("Printer discovery warning", str(exc), "warning")
                 continue
@@ -113,17 +89,21 @@ class BrotherQLDriver(PrinterDriver):
             cut=cut,
         )
 
-        backend_class = backend_factory("pyusb")
-        backend = backend_class(uri)
-
         try:
-            backend.write(instructions)
-            record_activity("Print completed", f"{copies} test label(s)")
+            backend = send_instructions(
+                instructions,
+                uri,
+                backend_identifier="pyusb",
+                blocking=True,
+            )
+            record_activity(
+                "Print completed",
+                f"{copies} label(s) via {backend.mode} "
+                f"(brother-ql {backend.package_version})",
+            )
         except Exception as exc:
             record_activity("Print failed", str(exc), "error")
             raise
-        finally:
-            backend.dispose()
 
     def create_test_label(self, title: str, lines: list[str]) -> bytes:
         image = Image.new("RGB", (696, 360), "white")

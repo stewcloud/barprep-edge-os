@@ -8,6 +8,7 @@ from ..activity import read_activity, record_activity
 from ..appliance import determine_appliance_state
 from ..capabilities import capability_values
 from ..diagnostics import create_diagnostics_zip
+from ..drivers.brother_compat import brother_package_version
 from ..network import collect_network_status
 from ..service import get_printer_driver
 from ..state import ensure_identity, patch_state
@@ -17,12 +18,6 @@ from .templates import render_status_page, render_wifi_page
 
 
 def _printers() -> list[dict[str, object]]:
-    """
-    Serialize output devices explicitly.
-
-    Do not use dataclasses.asdict() here. It recursively deep-copies values and
-    can fail if a future driver accidentally retains a ctypes-backed handle.
-    """
     return [device.to_dict() for device in get_printer_driver().discover()]
 
 
@@ -37,7 +32,10 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     def startup() -> None:
         ensure_identity()
-        record_activity("Runtime started", f"Version {__version__}")
+        record_activity(
+            "Runtime started",
+            f"Version {__version__}; brother-ql {brother_package_version()}",
+        )
 
     @app.get("/", response_class=HTMLResponse)
     def root() -> HTMLResponse:
@@ -62,7 +60,11 @@ def create_app() -> FastAPI:
 
     @app.get("/healthz")
     def health() -> dict[str, str]:
-        return {"status": "ok", "version": __version__}
+        return {
+            "status": "ok",
+            "version": __version__,
+            "brother_ql_version": brother_package_version(),
+        }
 
     @app.get("/api/status")
     def status() -> dict[str, object]:
@@ -76,6 +78,7 @@ def create_app() -> FastAPI:
         return {
             "name": "BarPrep Edge",
             "version": __version__,
+            "brother_ql_version": brother_package_version(),
             "device": state,
             "capabilities": capability_values(),
             "network": network.__dict__,
@@ -94,7 +97,10 @@ def create_app() -> FastAPI:
         return HTMLResponse(render_wifi_page(networks, collect_network_status().ssid))
 
     @app.post("/setup/wifi")
-    def wifi_submit(ssid: str = Form(...), password: str = Form("")) -> RedirectResponse:
+    def wifi_submit(
+        ssid: str = Form(...),
+        password: str = Form(""),
+    ) -> RedirectResponse:
         try:
             connect_wifi(ssid, password)
             patch_state(last_error=None)
@@ -106,7 +112,10 @@ def create_app() -> FastAPI:
     @app.post("/actions/test-print")
     def test_print() -> RedirectResponse:
         state = ensure_identity()
-        ready = next((printer for printer in _printers() if printer.get("ready")), None)
+        ready = next(
+            (printer for printer in _printers() if printer.get("ready")),
+            None,
+        )
 
         if not ready:
             raise HTTPException(409, "Brother QL-800 is not connected")
@@ -118,11 +127,22 @@ def create_app() -> FastAPI:
                 "Printer Test",
                 f"Device: {str(state['device_id'])[-8:].upper()}",
                 f"Station: {state.get('station_name') or 'Not assigned'}",
-                "Printer ready",
+                f"Edge: {__version__}",
             ],
         )
-        driver.print_png(png, connection_uri=str(ready["connection_uri"]))
-        return RedirectResponse("/", status_code=303)
+
+        try:
+            driver.print_png(
+                png,
+                connection_uri=str(ready["connection_uri"]),
+            )
+        except Exception as exc:
+            raise HTTPException(
+                500,
+                f"Printer test failed: {exc}",
+            ) from exc
+
+        return RedirectResponse("/?test_print=success", status_code=303)
 
     @app.get("/diagnostics.zip")
     def diagnostics() -> Response:
@@ -130,7 +150,8 @@ def create_app() -> FastAPI:
             create_diagnostics_zip(_printers()),
             media_type="application/zip",
             headers={
-                "Content-Disposition": "attachment; filename=barprep-edge-diagnostics.zip"
+                "Content-Disposition":
+                    "attachment; filename=barprep-edge-diagnostics.zip"
             },
         )
 

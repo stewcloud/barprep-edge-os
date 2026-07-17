@@ -9,11 +9,12 @@ Reference hardware:
 
 ## Current release
 
-**0.1.1-dev — USB Hot-Plug Fix**
+**0.2.0-dev — Brother Compatibility Layer**
 
-This release normalizes Brother discovery results so live PyUSB handles remain
-inside the printer driver. The dashboard and JSON API receive only stable,
-serializable output-device data.
+The Brother driver now isolates upstream library differences behind a stable
+Edge adapter. Current releases print through
+`brother_ql.backends.helpers.send()`, with a guarded fallback for legacy
+versions.
 
 ## Install or update
 
@@ -29,14 +30,11 @@ Open:
 http://barprep-edge.local:8787
 ```
 
-## Current features
+## Verify the printer
 
-- Appliance dashboard
-- Persistent identity
-- Network and Wi-Fi status
-- Automatic Wi-Fi onboarding
-- QL-800 discovery and hot-plug
-- Local test printing
-- Activity history
-- Diagnostics export
-- Edge API v1 contract
+```bash
+curl http://127.0.0.1:8787/healthz
+curl http://127.0.0.1:8787/api/status
+```
+
+Then use **Print test label** from the dashboard.
