@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import asdict
-
 from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 
@@ -19,11 +17,22 @@ from .templates import render_status_page, render_wifi_page
 
 
 def _printers() -> list[dict[str, object]]:
-    return [asdict(device) for device in get_printer_driver().discover()]
+    """
+    Serialize output devices explicitly.
+
+    Do not use dataclasses.asdict() here. It recursively deep-copies values and
+    can fail if a future driver accidentally retains a ctypes-backed handle.
+    """
+    return [device.to_dict() for device in get_printer_driver().discover()]
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="BarPrep Edge", version=__version__, docs_url="/api/docs", redoc_url=None)
+    app = FastAPI(
+        title="BarPrep Edge",
+        version=__version__,
+        docs_url="/api/docs",
+        redoc_url=None,
+    )
 
     @app.on_event("startup")
     def startup() -> None:
@@ -35,10 +44,21 @@ def create_app() -> FastAPI:
         state = ensure_identity()
         network = collect_network_status()
         printers = _printers()
-        appliance = determine_appliance_state(network, any(bool(p.get("ready")) for p in printers))
-        return HTMLResponse(render_status_page(version=__version__, state=state,
-            system=system_info_dict(), network=asdict(network), appliance=asdict(appliance),
-            printers=printers, activity=read_activity(20)))
+        appliance = determine_appliance_state(
+            network,
+            any(bool(printer.get("ready")) for printer in printers),
+        )
+        return HTMLResponse(
+            render_status_page(
+                version=__version__,
+                state=state,
+                system=system_info_dict(),
+                network=network.__dict__,
+                appliance=appliance.__dict__,
+                printers=printers,
+                activity=read_activity(20),
+            )
+        )
 
     @app.get("/healthz")
     def health() -> dict[str, str]:
@@ -49,18 +69,28 @@ def create_app() -> FastAPI:
         state = ensure_identity()
         network = collect_network_status()
         printers = _printers()
-        appliance = determine_appliance_state(network, any(bool(p.get("ready")) for p in printers))
-        return {"name": "BarPrep Edge", "version": __version__, "device": state,
-                "capabilities": capability_values(), "network": asdict(network),
-                "appliance": asdict(appliance), "system": system_info_dict(),
-                "printers": printers, "activity": read_activity(20)}
+        appliance = determine_appliance_state(
+            network,
+            any(bool(printer.get("ready")) for printer in printers),
+        )
+        return {
+            "name": "BarPrep Edge",
+            "version": __version__,
+            "device": state,
+            "capabilities": capability_values(),
+            "network": network.__dict__,
+            "appliance": appliance.__dict__,
+            "system": system_info_dict(),
+            "printers": printers,
+            "activity": read_activity(20),
+        }
 
     @app.get("/setup/wifi", response_class=HTMLResponse)
     def wifi_page() -> HTMLResponse:
         try:
-            networks = [asdict(item) for item in scan_networks()]
+            networks = [network.__dict__ for network in scan_networks()]
         except Exception as exc:
-            raise HTTPException(500, str(exc))
+            raise HTTPException(500, str(exc)) from exc
         return HTMLResponse(render_wifi_page(networks, collect_network_status().ssid))
 
     @app.post("/setup/wifi")
@@ -70,26 +100,39 @@ def create_app() -> FastAPI:
             patch_state(last_error=None)
         except Exception as exc:
             patch_state(last_error=str(exc))
-            raise HTTPException(400, str(exc))
+            raise HTTPException(400, str(exc)) from exc
         return RedirectResponse("/", status_code=303)
 
     @app.post("/actions/test-print")
     def test_print() -> RedirectResponse:
         state = ensure_identity()
-        ready = next((p for p in _printers() if p.get("ready")), None)
+        ready = next((printer for printer in _printers() if printer.get("ready")), None)
+
         if not ready:
             raise HTTPException(409, "Brother QL-800 is not connected")
+
         driver = get_printer_driver()
-        png = driver.create_test_label("BARPREP EDGE", [
-            "Printer Test", f"Device: {str(state['device_id'])[-8:].upper()}",
-            f"Station: {state.get('station_name') or 'Not assigned'}", "Printer ready"])
+        png = driver.create_test_label(
+            "BARPREP EDGE",
+            [
+                "Printer Test",
+                f"Device: {str(state['device_id'])[-8:].upper()}",
+                f"Station: {state.get('station_name') or 'Not assigned'}",
+                "Printer ready",
+            ],
+        )
         driver.print_png(png, connection_uri=str(ready["connection_uri"]))
         return RedirectResponse("/", status_code=303)
 
     @app.get("/diagnostics.zip")
     def diagnostics() -> Response:
-        return Response(create_diagnostics_zip(_printers()), media_type="application/zip",
-                        headers={"Content-Disposition": "attachment; filename=barprep-edge-diagnostics.zip"})
+        return Response(
+            create_diagnostics_zip(_printers()),
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": "attachment; filename=barprep-edge-diagnostics.zip"
+            },
+        )
 
     return app
 

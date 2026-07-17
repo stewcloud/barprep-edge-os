@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -18,6 +19,22 @@ class OutputDevice:
     media_description: str | None = None
     detail: str = ""
 
+    def to_dict(self) -> dict[str, Any]:
+        """Return the stable, JSON-safe public representation of an output."""
+        return {
+            "id": self.id,
+            "name": self.name,
+            "driver": self.driver,
+            "manufacturer": self.manufacturer,
+            "model": self.model,
+            "connection": self.connection,
+            "connection_uri": self.connection_uri,
+            "ready": self.ready,
+            "media_label": self.media_label,
+            "media_description": self.media_description,
+            "detail": self.detail,
+        }
+
 
 class PrinterDriver(ABC):
     @abstractmethod
@@ -25,8 +42,14 @@ class PrinterDriver(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def print_png(self, png_data: bytes, *, copies: int = 1, cut: bool = True,
-                  connection_uri: str | None = None) -> None:
+    def print_png(
+        self,
+        png_data: bytes,
+        *,
+        copies: int = 1,
+        cut: bool = True,
+        connection_uri: str | None = None,
+    ) -> None:
         raise NotImplementedError
 
     @abstractmethod

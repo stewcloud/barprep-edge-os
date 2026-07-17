@@ -7,6 +7,14 @@ Reference hardware:
 - Brother QL-800 over USB
 - 62 mm continuous label roll
 
+## Current release
+
+**0.1.1-dev — USB Hot-Plug Fix**
+
+This release normalizes Brother discovery results so live PyUSB handles remain
+inside the printer driver. The dashboard and JSON API receive only stable,
+serializable output-device data.
+
 ## Install or update
 
 ```bash
@@ -15,21 +23,19 @@ git pull
 sudo bash installer/install.sh
 ```
 
-Open `http://barprep-edge.local:8787`.
+Open:
 
-## Automatic Wi-Fi behavior
-
-Edge tries saved networks first. If no connection is available after 90 seconds,
-it starts `BarPrep-Setup-XXXX`. After a sustained five-minute outage, setup mode
-also becomes available.
+```text
+http://barprep-edge.local:8787
+```
 
 ## Current features
 
 - Appliance dashboard
 - Persistent identity
 - Network and Wi-Fi status
-- Wi-Fi onboarding
-- QL-800 discovery
+- Automatic Wi-Fi onboarding
+- QL-800 discovery and hot-plug
 - Local test printing
 - Activity history
 - Diagnostics export
