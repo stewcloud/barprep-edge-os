@@ -1,0 +1,17 @@
+[Unit]
+Description=BarPrep Edge Wi-Fi Watchdog
+After=NetworkManager.service
+Wants=NetworkManager.service
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=-/etc/barprep-edge.env
+ExecStart=/opt/barprep-edge/.venv/bin/python -m barprep_edge.wifi_watchdog
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

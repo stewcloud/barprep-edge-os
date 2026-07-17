@@ -1,25 +1,19 @@
-# Apply Milestone 3A Patch
+# Apply Milestone 4
 
-This patch adds the shared Edge API v1 and BarPrep Core Printing & Edge product
-contract. It does not yet activate cloud communication on the Pi.
-
-## Apply
-
-1. Extract this ZIP.
-2. Copy all contents into the root of the existing `barprep-edge-os` repository.
-3. Allow Windows to replace files.
-4. Review the changes in GitHub Desktop.
-5. Commit with:
+1. Extract the ZIP.
+2. Copy its contents into the root of `barprep-edge-os`.
+3. Replace matching files.
+4. Commit:
 
 ```text
-Define Edge API v1 and BarPrep Core integration
+Implement appliance networking, test print, and diagnostics
 ```
 
-6. Push to origin.
+5. Push.
+6. On the Pi:
 
-## Important documents
-
-- `docs/API_V1.md`
-- `docs/BARPREP_CORE_PRINTING_EDGE.md`
-
-The next runtime implementation will use these contracts.
+```bash
+cd ~/barprep-edge-os
+git pull
+sudo bash installer/install.sh
+```

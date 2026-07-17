@@ -1,26 +1,16 @@
 # Changelog
 
-All notable changes to BarPrep Edge OS will be documented here.
-
 ## [0.1.0-dev]
 
 ### Added
 
-- Initial repository structure
-- Edge specification
-- Runtime package skeleton
-- Printer driver interface
-- Brother QL-800 driver placeholder
-- Configuration and persistent state
-- Local appliance status page
-- Persistent Edge device identity
-- System telemetry for uptime, temperature, memory, storage, network, and OS
-- JSON status and health APIs
-- `barprep-edge.local` appliance hostname
-- Systemd and Avahi installation support
-- Edge API v1 specification
-- BarPrep Core v6.1 Printing & Edge module specification
-- Edge capability identifiers
-- Print job and Label Canvas API models
-- Friendly Edge naming and configuration revision state
-- Automated tests and GitHub workflow
+- Raspberry Pi Zero 2 W appliance runtime
+- Brother QL-800 USB discovery
+- Accurate network detection
+- Automatic Wi-Fi setup watchdog
+- Wi-Fi setup page
+- Test print
+- Printer media profile
+- Recent activity
+- Diagnostics ZIP
+- Edge API v1 contract

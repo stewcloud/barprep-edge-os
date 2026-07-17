@@ -1,80 +1,36 @@
 # BarPrep Edge OS
 
-BarPrep Edge OS is the appliance software for local BarPrep Edge devices.
-
-The initial reference platform is:
+Reference hardware:
 
 - Raspberry Pi Zero 2 W
 - Raspberry Pi OS Lite 64-bit
-- Brother QL-800 connected over USB
+- Brother QL-800 over USB
 - 62 mm continuous label roll
-- Outbound HTTPS connection to BarPrep Core
 
-## Current progress
-
-### Milestone 2 — Hello Edge
-
-- Persistent device identity
-- Local appliance status page
-- `barprep-edge.local` mDNS hostname
-- System health and telemetry
-- Printer discovery summary
-- Automatic startup through systemd
-
-### Milestone 3A — API & Product Contract
-
-- Edge API v1
-- Four-character pairing contract
-- Friendly Edge names
-- Capability advertisement
-- Label Canvas references
-- Print job state and lease contract
-- BarPrep Core v6.1 Printing & Edge UI specification
-
-## Local interface
-
-After installation, open:
-
-```text
-http://barprep-edge.local:8787
-```
-
-APIs:
-
-```text
-http://barprep-edge.local:8787/api/status
-http://barprep-edge.local:8787/healthz
-```
-
-## Install on Raspberry Pi OS Lite
+## Install or update
 
 ```bash
-cd barprep-edge-os
+cd ~/barprep-edge-os
+git pull
 sudo bash installer/install.sh
-sudo reboot
 ```
 
-## Product objective
+Open `http://barprep-edge.local:8787`.
 
-```text
-BarPrep Core
-    ↓
-Print Job
-    ↓
-BarPrep Edge OS
-    ↓
-Brother QL-800 over USB
-    ↓
-Physical label
-```
+## Automatic Wi-Fi behavior
 
-## Status
+Edge tries saved networks first. If no connection is available after 90 seconds,
+it starts `BarPrep-Setup-XXXX`. After a sustained five-minute outage, setup mode
+also becomes available.
 
-Pre-alpha. Do not deploy in production yet.
+## Current features
 
-## Versioning
-
-BarPrep Core and BarPrep Edge OS are versioned separately.
-
-- BarPrep Core baseline: `6.0a`
-- BarPrep Edge OS: `0.1.0-dev`
+- Appliance dashboard
+- Persistent identity
+- Network and Wi-Fi status
+- Wi-Fi onboarding
+- QL-800 discovery
+- Local test printing
+- Activity history
+- Diagnostics export
+- Edge API v1 contract
