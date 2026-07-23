@@ -1,13 +1,18 @@
 {
-  "version": "0.2.2-dev",
-  "release_name": "Readable Test Label",
+  "version": "0.3.0-dev",
+  "release_name": "Pairing Foundation",
+  "type": "overlay_patch",
+  "base_version": "0.2.2-dev",
   "changed_files": [
+    "APPLY_PATCH.md",
     "CHANGELOG.md",
-    "README.md",
-    "docs/RELEASE_0.2.2.md",
-    "installer/install.sh",
+    "docs/RELEASE_0.3.0.md",
     "runtime/barprep_edge/__init__.py",
-    "runtime/barprep_edge/drivers/brother_ql.py",
-    "tests/test_test_label.py"
-  ]
+    "runtime/barprep_edge/pairing.py",
+    "runtime/barprep_edge/web/app.py",
+    "runtime/barprep_edge/web/templates.py",
+    "tests/test_pairing.py",
+    "tests/test_pairing_request.py"
+  ],
+  "core_api_contract": "POST /api/v1/edge/pair"
 }

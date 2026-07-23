@@ -1,19 +1,18 @@
 # Changelog
 
-## [0.2.2-dev] — Readable Test Label
-
-### Improved
-- Replaced Pillow's tiny bitmap font with DejaVu Sans Bold.
-- Increased title and body font sizes for the 62 mm roll.
-- Added automatic line fitting and a clearer visual hierarchy.
-- Increased the test-label canvas height to 420 dots.
+## [0.3.0-dev] — Pairing Foundation
 
 ### Added
-- DejaVu font installation to the appliance installer.
-- Regression test for the rendered test-label dimensions.
+- Local BarPrep Core pairing page.
+- One-time pairing-code exchange contract.
+- Secure persistent Edge credentials.
+- Station assignment display.
+- Pairing status in `/api/status`.
+- Local unpairing workflow.
+- Pairing regression tests.
+
+## [0.2.2-dev] — Readable Test Label
+- Added scalable, readable test-label typography.
 
 ## [0.2.1-dev] — QL-800 USB Identifier Fix
 - Normalized malformed Brother USB identifiers.
-
-## [0.2.0-dev] — Brother Compatibility Layer
-- Added current and legacy Brother backend compatibility.

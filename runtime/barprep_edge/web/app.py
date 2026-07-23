@@ -10,11 +10,21 @@ from ..capabilities import capability_values
 from ..diagnostics import create_diagnostics_zip
 from ..drivers.brother_compat import brother_package_version
 from ..network import collect_network_status
+from ..pairing import (
+    PairingError,
+    clear_pairing_state,
+    create_pairing_request,
+    load_pairing_state,
+)
 from ..service import get_printer_driver
 from ..state import ensure_identity, patch_state
 from ..system_info import system_info_dict
 from ..wifi import connect_wifi, scan_networks
-from .templates import render_status_page, render_wifi_page
+from .templates import (
+    render_pairing_page,
+    render_status_page,
+    render_wifi_page,
+)
 
 
 def _printers() -> list[dict[str, object]]:
@@ -32,6 +42,16 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     def startup() -> None:
         ensure_identity()
+        try:
+            pairing = load_pairing_state()
+            patch_state(
+                paired=pairing.paired,
+                station_name=pairing.station_name or None,
+            )
+        except PairingError as exc:
+            patch_state(last_error=str(exc))
+            record_activity("Pairing state error", str(exc), "error")
+
         record_activity(
             "Runtime started",
             f"Version {__version__}; brother-ql {brother_package_version()}",
@@ -40,6 +60,7 @@ def create_app() -> FastAPI:
     @app.get("/", response_class=HTMLResponse)
     def root() -> HTMLResponse:
         state = ensure_identity()
+        pairing = load_pairing_state()
         network = collect_network_status()
         printers = _printers()
         appliance = determine_appliance_state(
@@ -50,6 +71,7 @@ def create_app() -> FastAPI:
             render_status_page(
                 version=__version__,
                 state=state,
+                pairing=pairing.public_dict(),
                 system=system_info_dict(),
                 network=network.__dict__,
                 appliance=appliance.__dict__,
@@ -69,6 +91,7 @@ def create_app() -> FastAPI:
     @app.get("/api/status")
     def status() -> dict[str, object]:
         state = ensure_identity()
+        pairing = load_pairing_state()
         network = collect_network_status()
         printers = _printers()
         appliance = determine_appliance_state(
@@ -80,6 +103,7 @@ def create_app() -> FastAPI:
             "version": __version__,
             "brother_ql_version": brother_package_version(),
             "device": state,
+            "pairing": pairing.public_dict(),
             "capabilities": capability_values(),
             "network": network.__dict__,
             "appliance": appliance.__dict__,
@@ -87,6 +111,59 @@ def create_app() -> FastAPI:
             "printers": printers,
             "activity": read_activity(20),
         }
+
+    @app.get("/setup/pair", response_class=HTMLResponse)
+    def pairing_page() -> HTMLResponse:
+        return HTMLResponse(
+            render_pairing_page(
+                pairing=load_pairing_state().public_dict(),
+                default_core_url="",
+            )
+        )
+
+    @app.post("/setup/pair")
+    def pairing_submit(
+        core_url: str = Form(...),
+        pairing_code: str = Form(...),
+    ) -> RedirectResponse:
+        identity = ensure_identity()
+        try:
+            pairing = create_pairing_request(
+                core_url=core_url,
+                pairing_code=pairing_code,
+                device_id=str(identity["device_id"]),
+                friendly_name=str(
+                    identity.get("friendly_name") or "BarPrep Edge"
+                ),
+                version=__version__,
+                capabilities=capability_values(),
+            )
+        except PairingError as exc:
+            record_activity("Pairing failed", str(exc), "error")
+            raise HTTPException(400, str(exc)) from exc
+
+        patch_state(
+            paired=True,
+            station_name=pairing.station_name or None,
+            last_error=None,
+        )
+        record_activity(
+            "Edge paired",
+            f"{pairing.station_name or 'Unassigned'} via {pairing.core_url}",
+        )
+        return RedirectResponse("/?paired=success", status_code=303)
+
+    @app.post("/actions/unpair")
+    def unpair() -> RedirectResponse:
+        prior = load_pairing_state()
+        clear_pairing_state()
+        patch_state(paired=False, station_name=None)
+        record_activity(
+            "Edge unpaired",
+            prior.core_url or "Local pairing data removed",
+            "warning",
+        )
+        return RedirectResponse("/?unpaired=success", status_code=303)
 
     @app.get("/setup/wifi", response_class=HTMLResponse)
     def wifi_page() -> HTMLResponse:
