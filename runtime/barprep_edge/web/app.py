@@ -12,6 +12,7 @@ from ..drivers.brother_compat import brother_package_version
 from ..network import collect_network_status
 from ..pairing import (
     PairingError,
+    check_pairing_status,
     clear_pairing_state,
     create_pairing_request,
     load_pairing_state,
@@ -122,15 +123,11 @@ def create_app() -> FastAPI:
         )
 
     @app.post("/setup/pair")
-    def pairing_submit(
-        core_url: str = Form(...),
-        pairing_code: str = Form(...),
-    ) -> RedirectResponse:
+    def pairing_submit(core_url: str = Form(...)) -> RedirectResponse:
         identity = ensure_identity()
         try:
-            pairing = create_pairing_request(
+            create_pairing_request(
                 core_url=core_url,
-                pairing_code=pairing_code,
                 device_id=str(identity["device_id"]),
                 friendly_name=str(
                     identity.get("friendly_name") or "BarPrep Edge"
@@ -139,25 +136,55 @@ def create_app() -> FastAPI:
                 capabilities=capability_values(),
             )
         except PairingError as exc:
-            record_activity("Pairing failed", str(exc), "error")
+            record_activity(
+                "Pairing registration failed",
+                str(exc),
+                "error",
+            )
             raise HTTPException(400, str(exc)) from exc
 
         patch_state(
-            paired=True,
-            station_name=pairing.station_name or None,
+            paired=False,
+            station_name=None,
             last_error=None,
         )
         record_activity(
-            "Edge paired",
-            f"{pairing.station_name or 'Unassigned'} via {pairing.core_url}",
+            "Pairing requested",
+            "Waiting for approval in BarPrep Core",
         )
-        return RedirectResponse("/?paired=success", status_code=303)
+        return RedirectResponse("/setup/pair", status_code=303)
+
+    @app.post("/setup/pair/check")
+    def pairing_check() -> RedirectResponse:
+        try:
+            pairing = check_pairing_status(version=__version__)
+        except PairingError as exc:
+            record_activity(
+                "Pairing status failed",
+                str(exc),
+                "error",
+            )
+            raise HTTPException(400, str(exc)) from exc
+
+        if pairing.paired:
+            patch_state(
+                paired=True,
+                station_name=pairing.station_name or None,
+                last_error=None,
+            )
+            record_activity("Edge paired", pairing.core_url)
+            return RedirectResponse("/?paired=success", status_code=303)
+
+        return RedirectResponse("/setup/pair", status_code=303)
 
     @app.post("/actions/unpair")
     def unpair() -> RedirectResponse:
         prior = load_pairing_state()
         clear_pairing_state()
-        patch_state(paired=False, station_name=None)
+        patch_state(
+            paired=False,
+            station_name=None,
+        )
         record_activity(
             "Edge unpaired",
             prior.core_url or "Local pairing data removed",
