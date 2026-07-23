@@ -9,7 +9,7 @@ fi
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 apt-get update
-apt-get install -y python3 python3-venv python3-pip network-manager avahi-daemon   libnss-mdns libusb-1.0-0 usbutils iproute2
+apt-get install -y   python3   python3-venv   python3-pip   network-manager   avahi-daemon   libnss-mdns   libusb-1.0-0   usbutils   iproute2   fonts-dejavu-core
 
 install -d -m 0755 /opt/barprep-edge
 rm -rf /opt/barprep-edge/runtime
@@ -18,6 +18,7 @@ cp -R "${REPO_DIR}/runtime" "${REPO_DIR}/pyproject.toml" "${REPO_DIR}/README.md"
 if [[ ! -d /opt/barprep-edge/.venv ]]; then
   python3 -m venv /opt/barprep-edge/.venv
 fi
+
 /opt/barprep-edge/.venv/bin/pip install --upgrade pip
 /opt/barprep-edge/.venv/bin/pip install --upgrade /opt/barprep-edge
 

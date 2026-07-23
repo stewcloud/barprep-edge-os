@@ -2,12 +2,15 @@
 
 ## Current release
 
-**0.2.1-dev — QL-800 USB Identifier Fix**
+**0.2.2-dev — Readable Test Label**
 
-Brother USB identifiers are normalized to stable VID/PID form before printing.
+The printer self-test now uses large scalable typography designed for a
+62 mm Brother continuous roll.
 
 ```bash
 cd ~/barprep-edge-os
 git pull --ff-only
 sudo bash installer/install.sh
 ```
+
+Then press **Print test label** again.

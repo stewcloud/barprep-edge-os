@@ -1,12 +1,13 @@
 {
-  "version": "0.2.1-dev",
-  "release_name": "QL-800 USB Identifier Fix",
+  "version": "0.2.2-dev",
+  "release_name": "Readable Test Label",
   "changed_files": [
     "CHANGELOG.md",
     "README.md",
-    "docs/RELEASE_0.2.1.md",
+    "docs/RELEASE_0.2.2.md",
+    "installer/install.sh",
     "runtime/barprep_edge/__init__.py",
-    "runtime/barprep_edge/drivers/brother_compat.py",
-    "tests/test_brother_compat.py"
+    "runtime/barprep_edge/drivers/brother_ql.py",
+    "tests/test_test_label.py"
   ]
 }

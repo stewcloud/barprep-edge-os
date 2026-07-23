@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+from pathlib import Path
 
 from brother_ql.backends.helpers import discover
 from brother_ql.conversion import convert
@@ -11,6 +12,36 @@ from ..activity import record_activity
 from ..config import settings
 from .base import OutputDevice, PrinterDriver
 from .brother_compat import identifier_from_discovery_result, send_instructions
+
+
+FONT_CANDIDATES = [
+    Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
+    Path("/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf"),
+    Path("/usr/share/fonts/truetype/freefont/FreeSansBold.ttf"),
+]
+
+
+def _load_font(size: int) -> ImageFont.ImageFont:
+    for candidate in FONT_CANDIDATES:
+        if candidate.exists():
+            return ImageFont.truetype(str(candidate), size=size)
+    return ImageFont.load_default()
+
+
+def _fit_text(
+    draw: ImageDraw.ImageDraw,
+    text: str,
+    *,
+    max_width: int,
+    preferred_size: int,
+    minimum_size: int,
+) -> ImageFont.ImageFont:
+    for size in range(preferred_size, minimum_size - 1, -2):
+        font = _load_font(size)
+        left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
+        if right - left <= max_width:
+            return font
+    return _load_font(minimum_size)
 
 
 class BrotherQLDriver(PrinterDriver):
@@ -106,17 +137,56 @@ class BrotherQLDriver(PrinterDriver):
             raise
 
     def create_test_label(self, title: str, lines: list[str]) -> bytes:
-        image = Image.new("RGB", (696, 360), "white")
+        width = 696
+        height = 420
+        margin = 24
+        image = Image.new("RGB", (width, height), "white")
         draw = ImageDraw.Draw(image)
-        font = ImageFont.load_default()
 
-        draw.rectangle((8, 8, 688, 352), outline="black", width=4)
-        draw.text((30, 28), title, fill="black", font=font)
+        draw.rounded_rectangle(
+            (8, 8, width - 8, height - 8),
+            radius=18,
+            outline="black",
+            width=5,
+        )
 
-        y = 90
-        for line in lines:
-            draw.text((30, y), line, fill="black", font=font)
-            y += 44
+        title_font = _fit_text(
+            draw,
+            title,
+            max_width=width - (margin * 2),
+            preferred_size=64,
+            minimum_size=42,
+        )
+        title_box = draw.textbbox((0, 0), title, font=title_font)
+        title_width = title_box[2] - title_box[0]
+        draw.text(
+            ((width - title_width) // 2, 24),
+            title,
+            fill="black",
+            font=title_font,
+        )
+
+        divider_y = 112
+        draw.line((margin, divider_y, width - margin, divider_y), fill="black", width=4)
+
+        body_lines = lines[:4]
+        y = 136
+        available_width = width - (margin * 2)
+
+        for index, line in enumerate(body_lines):
+            preferred = 46 if index == 0 else 38
+            minimum = 30
+            font = _fit_text(
+                draw,
+                line,
+                max_width=available_width,
+                preferred_size=preferred,
+                minimum_size=minimum,
+            )
+            draw.text((margin, y), line, fill="black", font=font)
+            box = draw.textbbox((margin, y), line, font=font)
+            line_height = box[3] - box[1]
+            y += max(line_height + 18, 64)
 
         output = io.BytesIO()
         image.save(output, "PNG")
