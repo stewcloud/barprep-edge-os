@@ -1,0 +1,50 @@
+# Replace the pairing import in runtime/barprep_edge/web/app.py
+
+from ..pairing import (
+    PairingError,
+    check_pairing_status,
+    clear_pairing_state,
+    create_pairing_request,
+    load_pairing_state,
+)
+
+# Replace the POST /setup/pair route with:
+
+@app.post("/setup/pair")
+def pairing_submit(core_url: str = Form(...)) -> RedirectResponse:
+    identity = ensure_identity()
+    try:
+        create_pairing_request(
+            core_url=core_url,
+            device_id=str(identity["device_id"]),
+            friendly_name=str(identity.get("friendly_name") or "BarPrep Edge"),
+            version=__version__,
+            capabilities=capability_values(),
+        )
+    except PairingError as exc:
+        record_activity("Pairing registration failed", str(exc), "error")
+        raise HTTPException(400, str(exc)) from exc
+
+    patch_state(paired=False, station_name=None, last_error=None)
+    record_activity("Pairing requested", "Waiting for approval in BarPrep Core")
+    return RedirectResponse("/setup/pair", status_code=303)
+
+
+@app.post("/setup/pair/check")
+def pairing_check() -> RedirectResponse:
+    try:
+        pairing = check_pairing_status(version=__version__)
+    except PairingError as exc:
+        record_activity("Pairing status failed", str(exc), "error")
+        raise HTTPException(400, str(exc)) from exc
+
+    if pairing.paired:
+        patch_state(
+            paired=True,
+            station_name=pairing.station_name or None,
+            last_error=None,
+        )
+        record_activity("Edge paired", pairing.core_url)
+        return RedirectResponse("/?paired=success", status_code=303)
+
+    return RedirectResponse("/setup/pair", status_code=303)

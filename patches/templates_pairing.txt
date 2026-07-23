@@ -1,0 +1,23 @@
+Replace render_pairing_page in runtime/barprep_edge/web/templates.py.
+
+Required UI behavior:
+
+1. Unpaired:
+   - Ask only for BarPrep Core URL.
+   - POST to /setup/pair.
+   - Do not ask the user to enter a pairing code.
+
+2. Pending:
+   - Read pairing["pairing_code_display"].
+   - Show the six-digit numeric code prominently.
+   - Explain: open Core > Edge Devices and approve the matching code.
+   - POST "Check Approval" to /setup/pair/check.
+
+3. Paired:
+   - Keep the existing paired-state page.
+
+Suggested pending form:
+
+<form method="post" action="/setup/pair/check">
+  <button>Check Approval</button>
+</form>
