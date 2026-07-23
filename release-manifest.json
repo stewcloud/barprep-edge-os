@@ -1,23 +1,12 @@
 {
-  "product": "BarPrep Edge OS",
-  "version": "0.2.0-dev",
-  "release_name": "Brother Compatibility Layer",
-  "target": "Raspberry Pi Zero 2 W + Brother QL-800",
-  "fixes": [
-    "backend_factory dictionary is no longer treated as callable",
-    "print API differences across brother_ql releases",
-    "opaque internal server error from test print"
-  ],
+  "version": "0.2.1-dev",
+  "release_name": "QL-800 USB Identifier Fix",
   "changed_files": [
     "CHANGELOG.md",
     "README.md",
-    "docs/RELEASE_0.2.0.md",
+    "docs/RELEASE_0.2.1.md",
     "runtime/barprep_edge/__init__.py",
-    "runtime/barprep_edge/diagnostics.py",
     "runtime/barprep_edge/drivers/brother_compat.py",
-    "runtime/barprep_edge/drivers/brother_ql.py",
-    "runtime/barprep_edge/web/app.py",
-    "tests/test_brother_compat.py",
-    "tests/test_driver_print.py"
+    "tests/test_brother_compat.py"
   ]
 }
